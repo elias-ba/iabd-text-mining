@@ -1,37 +1,43 @@
 # TFxIDF = tf(m, d) * log(N/(df + 1))
 
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
 from typing import List
 from math import log10
+import nltk
+
+nltk.download('stopwords')
+nltk.download('punkt')
 
 
 class Doc:
     def __init__(self, subject: str, content: str) -> None:
         self.subject = subject
-        self.content = self.clean(content)
-        self.words = self.content.split()
+        self.content = content
+        self.tokens = word_tokenize(self.content)
+        stop_words = set(stopwords.words('french'))
+        self.clean_tokens = [
+            token.lower() for token in self.tokens if token.lower() not in stop_words]
+        self.tf_idfs = {}
 
     def __repr__(self) -> str:
         return f"{self.subject}\n{self.content}"
 
-    def clean(self, text: str) -> str:
-        to_clean = (",", ".")
-        for char in to_clean:
-            text = text.replace(char, "")
-        return text
-
-    def tf(self, word: str) -> float:
-        return sum(1 for w in self.words if word.lower()
-                   == w.lower()) / len(self.words)
-
-    def tf_idf(self, word: str, idf: float) -> float:
-        return self.tf(word) * idf
+    def tf(self, token: str) -> float:
+        return sum(1 for clean_token in self.clean_tokens if clean_token.lower()
+                   == token.lower()) / len(self.clean_tokens)
 
 
-def idf(corpus: List[Doc], word: str) -> int:
-    # log(N/(df + 1))
+def idf(corpus: List[Doc], token: str) -> int:
     N = len(corpus)
-    df = sum(1 for doc in corpus if word.lower() in doc.content.lower())
+    df = sum(1 for doc in corpus if token.lower() in doc.clean_tokens)
     return log10(N/(df + 1))
+
+
+def tf_idf(corpus: List[Doc]) -> float:
+    for doc in corpus:
+        for token in doc.clean_tokens:
+            doc.tf_idfs[token] = doc.tf(token) * idf(corpus, token)
 
 
 corpus = [
@@ -57,25 +63,17 @@ corpus = [
         comme l'émergence de maladies non transmissibles liées au mode de vie. 
         Une alimentation équilibrée, une activité physique régulière et un suivi médical 
         sont essentiels pour maintenir une bonne santé.
-    """),
-    Doc(subject="Commerce", content="""
-        La est un aspect fondamental de la qualité de vie. Les avancées médicales 
-        ont permis de combattre de nombreuses maladies, mais des défis subsistent, 
-        comme l'émergence de maladies non transmissibles liées au mode de vie. 
-        Une alimentation équilibrée, une activité physique régulière et un suivi médical 
-        sont essentiels pour maintenir une bonne santé.
     """)
 ]
 
-word = "santé"
 
-idf = idf(corpus, word)
+def get_top(scores: dict, k=5) -> dict:
+    return dict(sorted(scores.items(), key=lambda item: item[1], reverse=True)[:k])
 
-print(f"Le df de '{word}' est de {idf}")
 
-print("----------------------------------------")
+tf_idf(corpus)
 
 for doc in corpus:
-    tf_idf = doc.tf_idf(word, idf)
-    print(f"Le TF-IDF de '{word}' dans le document '{
-          doc.subject}' est de {tf_idf}")
+    top = get_top(doc.tf_idfs)
+    print(f"Les 5 mots les plus specifiques au document '{
+          doc.subject}' sont: {list(top.keys())}")
