@@ -1,53 +1,74 @@
-TFIDF est un algo. Il est beaucoup utilise dans le domaine du information retrieval (text mining). Le but de l'algo est d'accorder un certain score aux mots dans un document en calculant le rapport entre la frequence des mots dans le document et leurs frequences dans le corpus.
 
-TFIDF((m,d)/c) = score d'importance
+# TF-IDF Implementation
 
-L'idee de l'algo c'est de calculer les TFIDF de tous les mots d'un document / corpus et de les classifier du plus grand au plus petit. Les N mots les plus grands donnent le sens / la classe / le theme du document.
+## Description
 
-Il y a des manifestations a Dakar aujourd'hui. Ces manifestations ont commence depuis 2021.
+Term Frequency-Inverse Document Frequency (TF-IDF) is a statistical measure used to evaluate the importance of a word in a document relative to a collection of documents, known as a corpus. Originating from the field of information retrieval and text mining, TF-IDF serves to highlight words that are more interesting, i.e., frequent in a specific document but rare across multiple documents. This technique is widely utilized in various applications, including search engines, document clustering, and text classification, to assess and rank documents' relevance concerning user queries.
 
-P(Il) = 1/14
-P(manifestations) = 2/14
+### Purpose
 
-TF est une methode de calcul de la frequence d'un mot donne dans un document. On va noter TF(m, d). Le resultat de TF depend fortement de la taille du document et du carractere generale ou specifique du mot. Exemple le TF des articles le, la, les, etc est forcement toujours grand car ces mots sont naturellement tres frequent dans la langue francaise. Et plus le document est long plus on a la chance de les retrouver. Souvent pour eviter que ces mots ne fausse nos calculs, on les enleve du document. Ces mots sont souvent appelle des 'stopwords'.
+The primary purpose of TF-IDF is to identify the significance of words within documents of a corpus. By diminishing the weight of commonly used words across all documents (stopwords) and increasing the weight of terms significant to a specific document, TF-IDF allows for efficient information retrieval and knowledge discovery.
 
-- On a un document D1 qui fait 100 mots avec 40 fois le mot 'manifestations'
-- On a un autre document D2 qui fait 1000 mots avec 237 fois le mot 'manifestations'
+### History
 
-```
-TF(m, d) = nombre d'occurence du mot m dans le document d / nombre de mots dans le document d
-```
+The concept of TF-IDF was developed during the 1970s as a response to the needs of document retrieval and text mining. It has since become a foundational tool in the field of natural language processing (NLP), enabling the indexing and ranking of documents based on their relevance to specific terms.
 
-```
-DF(m, c) = nombre de documents du corpus c dans lesquels le mot m apparait / nombre total de document dans le corpus
-```
+### How It Works
 
-```python
-corpus = {
-    "doc_1": "Il y a des manifestations aujourd'hui a Dakar",
-    "doc_2": "Ces manifestations ont commence depuis 2021",
-    "doc_3": "Cette situation affecte trop la stabilite du pays",
-    "doc_4": "Le Senegal n'a jamais connu autant de manifestations en si peu de temps",
-    "doc_5": "Tout le monde en souffre"
-}
+TF-IDF combines two metrics: Term Frequency (TF) and Inverse Document Frequency (IDF).
 
-TF("manifestations", "doc_1") = 1 / 5
-TF("manifestations", "doc_2") = 1 / 4
-TF("manifestations", "doc_3") = 0 / 3
-TF("manifestations", "doc_4") = 1 / 9
-TF("manifestations", "doc_5") = 0 / 5
+- **Term Frequency (TF)** calculates the frequency of a word in a given document, indicating the importance of the term within that specific document.
 
-DF("manifestations", corpus) = 3
-```
+    ```math
+    TF(m, d) = (Number of times term m appears in a document d) / (Total number of terms in the document d)
+    ```
 
-```
-NDF = DF / N avec N etant le nombre de doc dans le corpus
-IDF = 1/NDF = N/DF
-```
+- **Inverse Document Frequency (IDF)** assesses the general importance of the term across a corpus.
 
-IDF = log(N/(df + 1))
+    ```math
+    IDF(m, c) = log(Total number of documents in the corpus c / Number of documents containing term m)
+    ```
 
-```
-TFxIDF = tf(m, d) * log(N/(df + 1)) 
-avec m etant le mot, d etant le document courant, N etant la taille du corpus, et df etant le nombre de document dans lesquels le mot m apparait dans tout le corpus.
-```
+- **TF-IDF Score**: The TF-IDF value increases proportionally to the number of times a word appears in the document but is offset by the frequency of the word in the corpus.
+
+    ```math
+    TF-IDF(m, d, c) = TF(m, d) * IDF(m, c)
+    ```
+
+## Implementation Details
+
+This repository contains a Python implementation of the TF-IDF algorithm from scratch. The implementation is structured around two main classes: `Document` and `Corpus`, facilitating the calculation of TF, IDF, and TF-IDF scores for a given set of documents.
+
+### Features
+
+- Tokenization and cleaning of text documents.
+- Calculation of term frequencies within documents.
+- Computation of inverse document frequency across the corpus.
+- Ranking of terms within documents based on TF-IDF scores.
+
+## How to Test
+
+To test the TF-IDF implementation with your documents:
+
+1. **Prepare Your Documents**: Place your text documents within a designated folder. Each document should be in a separate text file.
+
+2. **Configure the Corpus**: Utilize the `Corpus` class to read documents from the folder and preprocess them.
+
+    ```python
+    from tfidf import Corpus
+
+    corpus = Corpus(folder_path='path/to/your/documents', language='english')
+    ```
+
+3. **Calculate TF-IDF Scores**: Invoke the `tf_idf` method to calculate and display the TF-IDF scores for terms within your documents.
+
+    ```python
+    tf_idf_scores = corpus.tf_idf()
+    print(tf_idf_scores)
+    ```
+
+4. **Analyze Results**: The output will include TF-IDF scores for each term within each document, allowing you to analyze the importance and relevance of terms across your corpus.
+
+## Contributing
+
+Contributions to improve the implementation or extend its functionality are welcome. Please feel free to fork the repository, make changes, and submit pull requests.
