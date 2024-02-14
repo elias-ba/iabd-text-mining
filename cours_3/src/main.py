@@ -1,4 +1,4 @@
-from models import Corpus
+from src.models import Corpus
 
 
 def main():
